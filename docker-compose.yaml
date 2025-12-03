@@ -8,11 +8,10 @@ services:
       - ./data/back:/app/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://ethercheck-backend:8080/api/health || exit 1" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s  # даёт время на запуск
+      test: [ "CMD-SHELL", "python -c 'import urllib.request,sys; sys.exit(0) if urllib.request.urlopen(\"http://localhost:8080/api/health\", timeout=3).getcode() == 200 else sys.exit(1)'" ]
+      timeout: 3s
+      retries: 5
+      start_period: 30s
 
   ethercheck-front:
     build:
@@ -23,11 +22,13 @@ services:
     #   - ./data/front:/app/data
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000/health || exit 1" ]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 5s
+    ports:
+      - "3000:3000"
 
   ethercheck-nginx:
     image: nginx:latest
